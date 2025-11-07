@@ -1,0 +1,58 @@
+{
+  "name": "@centure/node-sdk",
+  "version": "0.0.1",
+  "description": "A Typescript SDK for interacting with Centure's API",
+  "homepage": "https://github.com/centure-ai/typescript-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/centure-ai/typescript-sdk/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/centure-ai/typescript-sdk.git"
+  },
+  "license": "MIT",
+  "author": "Abir Taheer",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/index.d.ts",
+      "require": "./dist/mcp/index.js",
+      "default": "./dist/mcp/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "centure",
+    "prompt-injection",
+    "security",
+    "mcp",
+    "model-context-protocol",
+    "ai-security",
+    "llm-security"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.2",
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  },
+  "optionalDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
