@@ -295,6 +295,10 @@ export class CentureMCPClientTransport implements Transport {
             (sum, result) => sum + result.request_units,
             0,
           ),
+          billed_request_units: scanResults.reduce(
+            (sum, result) => sum + result.billed_request_units,
+            0,
+          ),
           service_tier: scanResults[0]?.service_tier || "standard",
         };
 

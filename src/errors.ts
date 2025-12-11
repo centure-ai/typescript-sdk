@@ -109,3 +109,17 @@ export class MissingApiKeyError extends Error {
     }
   }
 }
+
+/**
+ * Error thrown when both only and exclude are specified in scan options
+ */
+export class ScanOptionsError extends Error {
+  constructor() {
+    super("Cannot specify both only and exclude");
+    this.name = "ScanOptionsError";
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ScanOptionsError);
+    }
+  }
+}

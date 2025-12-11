@@ -1,6 +1,6 @@
 {
   "name": "@centure/node-sdk",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A Typescript SDK for interacting with Centure's API",
   "homepage": "https://github.com/centure-ai/typescript-sdk#readme",
   "bugs": {

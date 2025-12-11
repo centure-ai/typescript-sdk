@@ -1,15 +1,52 @@
 /**
  * Threat category codes returned by the Centure API
+ *
+ * - output_manipulation: Controls AI output content, formatting, or style
+ * - context_injection: Fake context, roles, system messages, or instruction overrides
+ * - data_exfiltration: Attempts to extract sensitive data
+ * - unauthorized_actions: Attempts to trigger unauthorized actions or API calls
  */
 export enum ThreatCategory {
-  BEHAVIORAL_OVERRIDE_LOW = "behavioral_override_low",
-  ROLE_MANIPULATION = "role_manipulation",
-  CONTEXT_INJECTION = "context_injection",
-  INSTRUCTION_HIERARCHY_MANIPULATION = "instruction_hierarchy_manipulation",
   OUTPUT_MANIPULATION = "output_manipulation",
+  CONTEXT_INJECTION = "context_injection",
   DATA_EXFILTRATION = "data_exfiltration",
-  EXTERNAL_ACTIONS = "external_actions",
-  SAFETY_BYPASS = "safety_bypass",
+  UNAUTHORIZED_ACTIONS = "unauthorized_actions",
+}
+
+/**
+ * Risk category type for filtering scan results
+ *
+ * - output_manipulation: Controls AI output content, formatting, or style
+ * - context_injection: Fake context, roles, system messages, or instruction overrides
+ * - data_exfiltration: Attempts to extract sensitive data
+ * - unauthorized_actions: Attempts to trigger unauthorized actions or API calls
+ */
+export type RiskCategory =
+  | "output_manipulation"
+  | "context_injection"
+  | "data_exfiltration"
+  | "unauthorized_actions";
+
+/**
+ * Options for scan requests
+ */
+export interface ScanOptions {
+  /**
+   * Only return detections for these categories.
+   * Cannot be used together with exclude.
+   */
+  only?: RiskCategory[];
+
+  /**
+   * Exclude detections for these categories.
+   * Cannot be used together with only.
+   */
+  exclude?: RiskCategory[];
+
+  /**
+   * Minimum confidence level for detections
+   */
+  minimum_confidence?: "medium" | "high";
 }
 
 /**
@@ -59,6 +96,11 @@ export interface ScanResponse {
   categories: DetectedCategory[];
 
   /**
+   * Explanation when content is flagged
+   */
+  reason?: string;
+
+  /**
    * Unique identifier for this request
    */
   request_id: string;
@@ -74,6 +116,11 @@ export interface ScanResponse {
   request_units: number;
 
   /**
+   * Number of request units billed
+   */
+  billed_request_units: number;
+
+  /**
    * Service tier used for the request
    */
   service_tier: ServiceTier;
@@ -87,6 +134,21 @@ export interface ScanTextRequest {
    * Text content to scan for prompt injection
    */
   content: string;
+
+  /**
+   * Only return detections for these categories
+   */
+  only?: RiskCategory[];
+
+  /**
+   * Exclude detections for these categories
+   */
+  exclude?: RiskCategory[];
+
+  /**
+   * Minimum confidence level for detections
+   */
+  minimum_confidence?: "medium" | "high";
 }
 
 /**
@@ -97,6 +159,21 @@ export interface ScanImageRequest {
    * Base64-encoded image (PNG, JPEG, GIF, WebP)
    */
   image: string;
+
+  /**
+   * Only return detections for these categories
+   */
+  only?: RiskCategory[];
+
+  /**
+   * Exclude detections for these categories
+   */
+  exclude?: RiskCategory[];
+
+  /**
+   * Minimum confidence level for detections
+   */
+  minimum_confidence?: "medium" | "high";
 }
 
 /**

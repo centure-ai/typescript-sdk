@@ -32,8 +32,40 @@ const result = await client.scanText("Your text content here");
 
 console.log("Is safe:", result.is_safe);
 console.log("Detected categories:", result.categories);
+console.log("Reason:", result.reason); // Explanation when flagged
 console.log("Request ID:", result.request_id);
 ```
+
+### Scan with Options
+
+Both `scanText` and `scanImage` accept an optional `ScanOptions` parameter:
+
+```typescript
+// Only scan for specific categories
+const result = await client.scanText("content", {
+  only: ["data_exfiltration", "unauthorized_actions"],
+});
+
+// Exclude certain categories
+const result = await client.scanText("content", {
+  exclude: ["output_manipulation"],
+});
+
+// Set minimum confidence threshold
+const result = await client.scanText("content", {
+  minimum_confidence: "high",
+});
+```
+
+#### Scan Options
+
+All options are optional.
+
+| Parameter            | Type                    | Description                                                                 |
+| -------------------- | ----------------------- | --------------------------------------------------------------------------- |
+| `only`               | `RiskCategory[]?`       | Only return detections for these categories. Cannot be used with `exclude`. |
+| `exclude`            | `RiskCategory[]?`       | Exclude detections for these categories. Cannot be used with `only`.        |
+| `minimum_confidence` | `"medium"` \| `"high"?` | Minimum confidence level for detections.                                    |
 
 ### Scan Image (Base64 or Buffer)
 
@@ -62,9 +94,11 @@ All scan methods return a `ScanResponse` object:
 interface ScanResponse {
   is_safe: boolean;
   categories: DetectedCategory[];
+  reason?: string;
   request_id: string;
   api_key_id: string;
   request_units: number;
+  billed_request_units: number;
   service_tier: ServiceTier;
 }
 
@@ -73,6 +107,17 @@ interface DetectedCategory {
   confidence: ConfidenceLevel;
 }
 ```
+
+| Field                  | Type                 | Description                                                |
+| ---------------------- | -------------------- | ---------------------------------------------------------- |
+| `is_safe`              | `boolean`            | Whether the content is safe (no prompt injection detected) |
+| `categories`           | `DetectedCategory[]` | List of detected threat categories                         |
+| `reason`               | `string?`            | Explanation when content is flagged                        |
+| `request_id`           | `string`             | Unique identifier for this request                         |
+| `api_key_id`           | `string`             | ID of the API key used                                     |
+| `request_units`        | `number`             | Number of request units consumed                           |
+| `billed_request_units` | `number`             | Number of request units billed                             |
+| `service_tier`         | `ServiceTier`        | Service tier used for the request                          |
 
 ## MCP Integration
 
@@ -133,7 +178,7 @@ await client.connect(secureTransport);
       return false;
     }
     return true;
-  }
+  };
   ```
 
 - **`onAfterScan`** (`(context: OnAfterScanContext) => void | OnAfterScanResult`):
@@ -143,7 +188,7 @@ await client.connect(secureTransport);
   ```typescript
   onAfterScan: ({ message, scanResult }) => {
     console.log(`Scanned ${message.method}: ${scanResult.is_safe}`);
-  }
+  };
   ```
 
 - **`onUnsafeMessage`** (`(context: OnUnsafeMessageContext) => OnUnsafeMessageResult`):
@@ -154,7 +199,7 @@ await client.connect(secureTransport);
   onUnsafeMessage: ({ message, scanResult }) => {
     // Allow medium-confidence threats
     const isMedium = scanResult.categories.every(
-      (c) => c.confidence === "medium"
+      (c) => c.confidence === "medium",
     );
 
     if (isMedium) {
@@ -173,7 +218,7 @@ await client.connect(secureTransport);
         },
       },
     };
-  }
+  };
   ```
 
 - **`onBeforeSend`** (`(context: { message: JSONRPCMessage, extra?: MessageExtraInfo }) => void`):
@@ -183,7 +228,7 @@ await client.connect(secureTransport);
   ```typescript
   onBeforeSend: ({ message, extra }) => {
     console.log(`Sending ${message.method}`);
-  }
+  };
   ```
 
 #### Complete Example
@@ -207,7 +252,7 @@ const secureTransport = new CentureMCPClientTransport({
   onUnsafeMessage: ({ message, scanResult }) => {
     // Allow medium-confidence detections
     const isMedium = scanResult.categories.every(
-      (c) => c.confidence === "medium"
+      (c) => c.confidence === "medium",
     );
 
     if (isMedium) {
@@ -313,14 +358,12 @@ const client = new CentureClient({
 
 The API detects the following threat categories:
 
-- `behavioral_override_low` - Attempts to override system behavior
-- `role_manipulation` - Attempts to manipulate the AI's role
-- `context_injection` - Injection of malicious context
-- `instruction_hierarchy_manipulation` - Manipulation of instruction priority
-- `output_manipulation` - Attempts to control output format
-- `data_exfiltration` - Attempts to extract sensitive data
-- `external_actions` - Attempts to trigger external actions
-- `safety_bypass` - Attempts to bypass safety measures
+| Category               | Description                                                    |
+| ---------------------- | -------------------------------------------------------------- |
+| `output_manipulation`  | Controls AI output content, formatting, or style               |
+| `context_injection`    | Fake context, roles, system messages, or instruction overrides |
+| `data_exfiltration`    | Attempts to extract sensitive data                             |
+| `unauthorized_actions` | Attempts to trigger unauthorized actions or API calls          |
 
 ## License
 

@@ -4,12 +4,14 @@ import {
   InternalServerError,
   MissingApiKeyError,
   PayloadTooLargeError,
+  ScanOptionsError,
   UnauthorizedError,
 } from "./errors";
 import {
   ApiErrorResponse,
   HttpStatus,
   ScanImageRequest,
+  ScanOptions,
   ScanResponse,
   ScanTextRequest,
 } from "./types";
@@ -72,6 +74,16 @@ export class CentureClient {
   }
 
   /**
+   * Validates scan options
+   * @throws {ScanOptionsError} If both only and exclude are specified
+   */
+  private validateScanOptions(options?: ScanOptions): void {
+    if (options?.only && options?.exclude) {
+      throw new ScanOptionsError();
+    }
+  }
+
+  /**
    * Makes an API request with proper error handling
    */
   private async request<T>(endpoint: string, init?: RequestInit): Promise<T> {
@@ -125,11 +137,15 @@ export class CentureClient {
 
   /**
    * Scans text content for prompt injection attacks
-   * @param content - The text content to scan
+   * @param text - The text content to scan
+   * @param options - Optional scan options
    * @returns Scan results with safety assessment and detected categories
+   * @throws {ScanOptionsError} If both only and exclude are specified
    */
-  async scanText(content: string): Promise<ScanResponse> {
-    const body: ScanTextRequest = { content };
+  async scanText(text: string, options?: ScanOptions): Promise<ScanResponse> {
+    this.validateScanOptions(options);
+
+    const body: ScanTextRequest = { content: text, ...options };
 
     return this.request<ScanResponse>("/v1/prompt-injection/text", {
       method: "POST",
@@ -143,19 +159,18 @@ export class CentureClient {
   /**
    * Scans an image for prompt injection attacks
    * @param image - Base64-encoded image string OR Buffer (will be converted to base64)
+   * @param options - Optional scan options
    * @returns Scan results with safety assessment and detected categories
+   * @throws {ScanOptionsError} If both only and exclude are specified
    */
-  async scanImage(image: string | Buffer): Promise<ScanResponse> {
-    let base64Image: string;
+  async scanImage(
+    image: string | Buffer,
+    options?: ScanOptions,
+  ): Promise<ScanResponse> {
+    this.validateScanOptions(options);
 
-    // Convert Buffer to base64 if needed
-    if (Buffer.isBuffer(image)) {
-      base64Image = image.toString("base64");
-    } else {
-      base64Image = image;
-    }
-
-    const body: ScanImageRequest = { image: base64Image };
+    const base64 = Buffer.isBuffer(image) ? image.toString("base64") : image;
+    const body: ScanImageRequest = { image: base64, ...options };
 
     return this.request<ScanResponse>("/v1/prompt-injection/image", {
       method: "POST",

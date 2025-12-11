@@ -7,7 +7,9 @@ export {
   ConfidenceLevel,
   DetectedCategory,
   HttpStatus,
+  RiskCategory,
   ScanImageRequest,
+  ScanOptions,
   ScanResponse,
   ScanTextRequest,
   ServiceTier,
@@ -21,5 +23,6 @@ export {
   InternalServerError,
   MissingApiKeyError,
   PayloadTooLargeError,
+  ScanOptionsError,
   UnauthorizedError,
 } from "./errors";
